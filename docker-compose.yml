@@ -1,0 +1,16 @@
+version: '3'
+services:
+  app:
+    container_name: docker-node-mongo
+    
+    build: .
+    command: node src/index.js
+    ports:
+      - '80:3000'
+    depends_on:
+      - mongo
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - '27017:27017'
