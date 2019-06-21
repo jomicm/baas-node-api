@@ -33,19 +33,19 @@ const logStart = require('../helpers/logStart');
 const apilvl = 'v1';
 
 // TOOLKIT
-router.get(`/api/${apilvl}/toolkit/:dbname/`, async (req,res) => {
+router.get(`/api/${apilvl}/toolkit/:dbname/`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName : req.params.dbname }
     let r = await mongoMgt.toolkitIsDB(reqInfo);
     res.send({response: r});
 });
-router.get(`/api/${apilvl}/toolkit/:dbname/:collection`, async (req,res) => {
+router.get(`/api/${apilvl}/toolkit/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName : req.params.dbname, colName : req.params.collection }
     let r = await mongoMgt.toolkitIsCollection(reqInfo);
     res.send({response: r});
 });
 
 // POST FILES
-router.post(`/api/${apilvl}/upload/:foldername`, upload.single('file'), async (req,res) => {
+router.post(`/api/${apilvl}/upload/:foldername`, logStart, checkAuth, upload.single('file'), async (req, res) => {
     try { 
         const finalPath = path.join('./uploads', req.params.foldername);
         const flagExists = fs.existsSync(path.join(finalPath, req.file.filename));
@@ -71,14 +71,14 @@ router.post(`/api/${apilvl}/upload/:foldername`, upload.single('file'), async (r
 });
 
 // POST
-router.post(`/api/${apilvl}/:dbname/:collection`, async (req,res) => {
+router.post(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, obj:req.body};
     let r = await mongoMgt.postMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // GET
-router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req,res) => {
+router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
 //router.get(`/api/${apilvl}/:dbname/:collection`, logStart, async (req,res) => {
     /* req.start = new Date;
     req.hrtimestart = process.hrtime(); */
@@ -99,21 +99,21 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
 });
 
 // GET_SINGLE
-router.get(`/api/${apilvl}/:dbname/:collection/:id`, async (req,res) => {
+router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName: req.params.dbname, colName: req.params.collection, id: req.params.id }
     let r = await mongoMgt.getSingleMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // DELETE
-router.delete(`/api/${apilvl}/:dbname/:collection/:id`, async (req, res) => {
+router.delete(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, id:req.params.id};
     let r = await mongoMgt.deleteMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // PUT
-router.put(`/api/${apilvl}/:dbname/:collection/:id`, async (req,res) => {
+router.put(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, obj:req.body, id:req.params.id};
     let r = await mongoMgt.updateMethod(reqInfo);
     res.status(r.request.code).send(r);

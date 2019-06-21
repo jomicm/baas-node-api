@@ -2,8 +2,8 @@ const mongo = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
-
-const connString = 'mongodb://mongo';
+//const connString = 'mongodb://localhost';
+const connString = 'mongodb://mongo:27017';
 const client = new MongoClient(connString, { useNewUrlParser: true });
 
 // Initializating

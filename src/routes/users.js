@@ -46,7 +46,7 @@ router.post('/users/signup', async (req, res) => {
 });
 
 router.post('/users/getdevelopertoken', async(req, res) => {
-    const {email,password} = req.body;
+    const { email,password } = req.body;
     const _user = await User.findOne({email});
     if(!_user){
         res.status(403).send({errorMessage: 'User does not exist'});
