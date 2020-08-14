@@ -35,6 +35,8 @@ const apilvl = 'v1';
 // TOOLKIT
 router.get(`/api/${apilvl}/toolkit/:dbname/`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName : req.params.dbname }
+    // const { params: { dbname } } = req;
+    // let r = await mongoMgt.toolkitIsDB({ dbname });
     let r = await mongoMgt.toolkitIsDB(reqInfo);
     res.send({response: r});
 });
@@ -77,14 +79,22 @@ router.post(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (re
     res.status(r.request.code).send(r);
 });
 
+// POST WITH ENCRYPTION FOR PASSWORD FIELD
+router.post(`/api/${apilvl}/:dbname/:collection/encrypt`, logStart, checkAuth, async (req, res) => {
+    const { dbname: dbName, collection: colName } = req.params;
+    const r = await mongoMgt.postMethod({ dbName, colName, obj: req.body, isEncryption: true });
+    res.status(r.request.code).send(r);
+});
+
+// POST TO GET VALIDATION OF USER
+router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, checkAuth, async (req, res) => {
+    const { dbname: dbName, collection: colName } = req.params;
+    const r = await mongoMgt.postGetUserValidated({ dbName, colName, obj: req.body, res });
+    res.status(r.request.code).send(r);
+});
+
 // GET
 router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
-//router.get(`/api/${apilvl}/:dbname/:collection`, logStart, async (req,res) => {
-    /* req.start = new Date;
-    req.hrtimestart = process.hrtime(); */
-    //req({start: new Date, hrtimestart : process.hrtime()});
-    
-    //Object.assign(req, {start: new Date, hrtimestart : process.hrtime()});
     const reqInfo = {
         dbName: req.params.dbname,
         colName: req.params.collection,

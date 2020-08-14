@@ -2,8 +2,11 @@ const mongo = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
-//const connString = 'mongodb://localhost';
-const connString = 'mongodb://mongo:27017';
+const jwt = require('jsonwebtoken');
+
+const { encryptPassword, matchPassword } = require('../helpers/encryption');
+const connString = 'mongodb://localhost';
+// const connString = 'mongodb://mongo:27017';
 const client = new MongoClient(connString, { useNewUrlParser: true });
 
 // Initializating
@@ -14,12 +17,47 @@ exports.initializate = async () => {
 // Mongo Methods
 exports.postMethod = async reqInfo => {
     let hrstart = process.hrtime();
-    const { dbName, colName, obj } = reqInfo;
+    const { dbName, colName, obj, isEncryption = false } = reqInfo;
+    if (isEncryption) {
+        const passwordEncrypted = await encryptPassword(obj.password || '');
+        obj.password = passwordEncrypted;
+    }
     try {
-        let r = obj.length == undefined ? await client.db(dbName).collection(colName).insertOne(obj) : await client.db(dbName).collection(colName).insertMany(obj);
+        let r = obj.length === undefined ?
+            await client.db(dbName).collection(colName).insertOne(obj) :
+            await client.db(dbName).collection(colName).insertMany(obj);
         assert.equal(obj.length == undefined ? 1 : obj.length, r.insertedCount);
         let hrend = process.hrtime(hrstart);
-        return messages.generateReply('success', 200, 'POST', dbName, colName, r.insertedCount, hrend, '', r);
+        return messages.generateReply('success', 200, 'POST', dbName, colName, r.insertedCount, hrend, '', r.ops);
+    } catch (error) {
+        let hrend = process.hrtime(hrstart);
+        return messages.generateReply('error', 400, 'POST', dbName, colName, 0, hrend, error.message, null);
+    }
+}
+
+// Custom Method to validate user
+exports.postGetUserValidated = async reqInfo => {
+    let hrstart = process.hrtime();
+    const { dbName, colName, obj, res } = reqInfo;
+    try {
+        const { user, password } = obj;
+        let hrend = process.hrtime(hrstart);
+        if (!user || !password) {
+            return messages.generateReply('error', 400, 'POST', dbName, colName, 0, hrend, 'User or Password are not present', null);
+        }
+        let r = await client.db(dbName).collection(colName).find({email: user}).toArray();
+        if (!r || !r.length) {
+            return messages.generateReply('error', 400, 'POST', dbName, colName, 0, hrend, 'User does not exist', null);
+        }
+        const matchPwd = await matchPassword(password, r[0].password);
+        if (!matchPwd) {
+            return messages.generateReply('error', 403, 'POST', dbName, colName, 0, hrend, 'Access does not allowed', null);
+        }
+        console.log(r)
+        const { name, lastName, email, _id: id } = r[0];
+        const accessToken = await jwt.sign({ id: id, type:'user', email, name, lastName }, res.locals.JWT_KEY, { expiresIn: '100d' });
+        const response = { name, lastName, email, accessToken };
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, r.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
     } catch (error) {
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('error', 400, 'POST', dbName, colName, 0, hrend, error.message, null);
@@ -117,6 +155,7 @@ clearParams = reqInfo => {
     reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
     return reqInfo;
 }
+
 isJSON = testString => {
     try {
         let o = JSON.parse(testString);

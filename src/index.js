@@ -9,6 +9,7 @@ const passport = require('passport');
 const morgan = require('morgan');
 const mongoMgt = require('./config/mongo');
 const logRequests = require('./helpers/logRequests');
+const cors = require('cors');
 
 
 // Initializations
@@ -18,7 +19,7 @@ require('./config/passport');
 mongoMgt.initializate();
 
 // Settings
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3001);
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs({
     defaultLayout:'main',
@@ -28,7 +29,7 @@ app.engine('.hbs', exphbs({
 }));
 app.set('view engine', '.hbs');
 
-// Middlewares
+// Middleware
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
 app.use(methodOverride('_method'));
@@ -42,10 +43,7 @@ app.use(passport.session());
 app.use(flash());
 app.use('/uploads', express.static('uploads'));
 app.use(morgan('dev'));
-/*
-app.use(morgan('common', () => {
-    console.log('From Morgan Common!');
-})); */
+app.use(cors());
 
 // Global Variables
 app.use((req, res, next) => {
