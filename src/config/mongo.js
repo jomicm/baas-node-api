@@ -69,7 +69,10 @@ exports.updateMethod = async reqInfo => {
     const { dbName, colName, obj, id } = reqInfo;
     try {
         const o_id = new mongo.ObjectId(id);
-        let r = await client.db(dbName).collection(colName).findOneAndUpdate({ '_id': o_id }, { $set: obj });
+        let r0 = await client.db(dbName).collection(colName).findOne({ '_id': o_id });
+        const { password } = r0;
+        const objSecure = { ...obj, ...(password ? { password } : {}) };
+        let r = await client.db(dbName).collection(colName).findOneAndUpdate({ '_id': o_id }, { $set: objSecure });
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('success', 200, 'UPDATE', dbName, colName, r.value ? 1 : 0, hrend, '', r);
     } catch (error) {
