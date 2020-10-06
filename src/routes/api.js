@@ -108,6 +108,21 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
     res.status(r.request.code).send(r);
 });
 
+// GET - PUBLIC COLLECTIONS
+router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, res) => {
+    const reqInfo = {
+        dbName: req.params.dbname,
+        colName: req.params.collection,
+        query: req.query.query || {},
+        fields: req.query.fields || {},
+        sort: req.query.sort || 'asc',
+        skip: req.query.skip || 0,
+        limit: req.query.limit || 0
+    }
+    let r = await mongoMgt.getMethod(reqInfo);
+    res.status(r.request.code).send(r);
+});
+
 // GET_SINGLE
 router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName: req.params.dbname, colName: req.params.collection, id: req.params.id }
