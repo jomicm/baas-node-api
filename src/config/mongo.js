@@ -85,6 +85,7 @@ exports.getMethod = async reqInfo => {
     let hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
+        console.log('reqInfo: >>>>>>>>>>>>>>>>>>>>> \n\n', reqInfo)
         let r = await client.db(reqInfo.dbName).collection(reqInfo.colName).find(reqInfo.query).skip(reqInfo.skip).limit(reqInfo.limit).sort(reqInfo.sort).project(reqInfo.fields).toArray();
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, r.length, hrend, '', r, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
@@ -155,13 +156,34 @@ clearParams = reqInfo => {
     reqInfo.skip = Number.isInteger(parseInt(reqInfo.skip)) != NaN ? parseInt(reqInfo.skip) : 0;
     reqInfo.sort = isJSON(reqInfo.sort) ? JSON.parse(reqInfo.sort) : {};
     reqInfo.fields = isJSON(reqInfo.fields) ? JSON.parse(reqInfo.fields) : {};
-    reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
+    // reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
+    console.log('reqInfo.query:11111\n', reqInfo.query)
+    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
+    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
+    // console.log('reqInfo.query:33333\n', a)
+    // const b = JSON.parse(a);
+    // console.log('reqInfo.query:4444\n', typeof b)
+    // console.log('reqInfo.query:><<<>\n', isJSON(reqInfo.query))
+    // console.log('reqInfo.query:><<<>Str\n', testJSON(reqInfo.query))
+    reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
     return reqInfo;
 }
+const testJSON = (str) => {
+    console.log('str:\n', str)
+    try {
+        const res = JSON.parse(str);
+        return res;
+    } catch(e) {
+        return {};
+    }
+};
 
 isJSON = testString => {
     try {
+        console.log('o ?????????????? 0:\n', o )
         let o = JSON.parse(testString);
+        console.log('o ?????????????? 1:\n', o )
+        console.log('o ?????????????? 2:\n', typeof o )
         if (o && typeof o === "object") {
             return true;
         } else {
