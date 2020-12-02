@@ -85,7 +85,6 @@ exports.getMethod = async reqInfo => {
     let hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
-        console.log('reqInfo: >>>>>>>>>>>>>>>>>>>>> \n\n', reqInfo)
         let r = await client.db(reqInfo.dbName).collection(reqInfo.colName).find(reqInfo.query).skip(reqInfo.skip).limit(reqInfo.limit).sort(reqInfo.sort).project(reqInfo.fields).toArray();
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, r.length, hrend, '', r, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
@@ -180,10 +179,7 @@ const testJSON = (str) => {
 
 isJSON = testString => {
     try {
-        console.log('o ?????????????? 0:\n', o )
         let o = JSON.parse(testString);
-        console.log('o ?????????????? 1:\n', o )
-        console.log('o ?????????????? 2:\n', typeof o )
         if (o && typeof o === "object") {
             return true;
         } else {
