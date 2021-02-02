@@ -103,7 +103,7 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
         sort: req.query.sort || 'asc',
         skip: req.query.skip || 0,
         limit: req.query.limit || 0
-    }
+    };
     let r = await mongoMgt.getMethod(reqInfo);
     res.status(r.request.code).send(r);
 });

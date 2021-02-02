@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const mongo = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
@@ -154,7 +155,7 @@ clearParams = reqInfo => {
     reqInfo.limit = Number.isInteger(parseInt(reqInfo.limit)) != NaN ? parseInt(reqInfo.limit) : 0;
     reqInfo.skip = Number.isInteger(parseInt(reqInfo.skip)) != NaN ? parseInt(reqInfo.skip) : 0;
     reqInfo.sort = isJSON(reqInfo.sort) ? JSON.parse(reqInfo.sort) : {};
-    reqInfo.fields = isJSON(reqInfo.fields) ? JSON.parse(reqInfo.fields) : {};
+    // reqInfo.fields = isJSON(reqInfo.fields) ? JSON.parse(reqInfo.fields) : {};
     // reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
     console.log('reqInfo.query:11111\n', reqInfo.query)
     // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
@@ -164,9 +165,21 @@ clearParams = reqInfo => {
     // console.log('reqInfo.query:4444\n', typeof b)
     // console.log('reqInfo.query:><<<>\n', isJSON(reqInfo.query))
     // console.log('reqInfo.query:><<<>Str\n', testJSON(reqInfo.query))
-    reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
+    // reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
+    reqInfo.query = sanitizeObject(reqInfo.query);
+    reqInfo.fields = sanitizeObject(reqInfo.fields);
     return reqInfo;
 }
+const sanitizeObject = (obj) => {
+    if (!obj) return {};
+    if (_.isObject(obj)) return obj;
+    try {
+        const objJS = JSON.parse(obj);
+        return _.isObject(objJS) ? objJS : {};
+    } catch (ex) {
+        return {};
+    }
+};
 const testJSON = (str) => {
     console.log('str:\n', str)
     try {
