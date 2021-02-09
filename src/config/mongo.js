@@ -95,6 +95,19 @@ exports.getMethod = async reqInfo => {
     }
 }
 
+exports.getCountMethod = async reqInfo => {
+    let hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        const count = await client.db(reqInfo.dbName).collection(reqInfo.colName).find(reqInfo.query).count();
+        let hrend = process.hrtime(hrstart);
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, count, hrend, '', { count }, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        let hrend = process.hrtime(hrstart);
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    }
+}
+
 exports.getSingleMethod = async reqInfo => {
     let hrstart = process.hrtime();
     try {

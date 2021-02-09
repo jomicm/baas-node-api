@@ -93,6 +93,17 @@ router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, checkAuth,
     res.status(r.request.code).send(r);
 });
 
+// GET COUNT
+router.get(`/api/${apilvl}/count/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
+    const reqInfo = {
+        dbName: req.params.dbname,
+        colName: req.params.collection,
+        query: req.query.query || {}
+    };
+    let r = await mongoMgt.getCountMethod(reqInfo);
+    res.status(r.request.code).send(r);
+});
+
 // GET
 router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     const reqInfo = {
