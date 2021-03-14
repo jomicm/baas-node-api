@@ -87,7 +87,7 @@ router.post(`/api/${apilvl}/:dbname/:collection/encrypt`, logStart, checkAuth, a
 });
 
 // POST TO GET VALIDATION OF USER
-router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, checkAuth, async (req, res) => {
+router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, async (req, res) => {
     const { dbname: dbName, collection: colName } = req.params;
     const r = await mongoMgt.postGetUserValidated({ dbName, colName, obj: req.body, res });
     res.status(r.request.code).send(r);
