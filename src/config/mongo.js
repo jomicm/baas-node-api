@@ -55,9 +55,9 @@ exports.postGetUserValidated = async reqInfo => {
             return messages.generateReply('error', 403, 'POST', dbName, colName, 0, hrend, 'Access does not allowed', null);
         }
         console.log(r)
-        const { name, lastName, email, _id: id, fileExt = '', profilePermissions = {} } = r[0];
+        const { name, lastName, email, _id: id, fileExt = '', profilePermissions = {}, selectedBoss = {} } = r[0];
         const accessToken = await jwt.sign({ id: id, type:'user', email, name, lastName }, res.locals.JWT_KEY, { expiresIn: '100d' });
-        const response = { id, fileExt, name, lastName, email, accessToken, profilePermissions };
+        const response = { id, fileExt, name, lastName, email, accessToken, profilePermissions, selectedBoss };
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, r.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
     } catch (error) {
         let hrend = process.hrtime(hrstart);
