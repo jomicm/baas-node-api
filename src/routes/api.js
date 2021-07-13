@@ -120,6 +120,23 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
     res.status(r.request.code).send(r);
 });
 
+// GET - Collation
+router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async (req, res) =>{
+    const reqInfo = {
+        dbName: req.params.dbname,
+        colName: req.params.collection,
+        query: req.query.query || {},
+        fields: req.query.fields || {},
+        sort: req.query.sort || 'asc',
+        skip: req.query.skip || 0,
+        limit: req.query.limit || 0
+    };
+
+    const response = await mongoMgt.getCollationMethod(reqInfo);
+
+    res.status(response.request.code).send(response);
+})
+
 // GET - PUBLIC COLLECTIONS
 router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, res) => {
     const reqInfo = {
