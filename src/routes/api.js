@@ -123,13 +123,13 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
 // GET - Collation
 router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
-        dbName: req.params.dbname,
         colName: req.params.collection,
-        query: req.query.query || {},
+        dbName: req.params.dbname,
         fields: req.query.fields || {},
-        sort: req.query.sort || 'asc',
+        limit: req.query.limit || 0,
+        query: req.query.query || {},
         skip: req.query.skip || 0,
-        limit: req.query.limit || 0
+        sort: req.query.sort || 'asc',
     };
     const response = await mongoMgt.getCollationMethod(reqInfo);
 
