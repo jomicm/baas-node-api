@@ -95,7 +95,7 @@ exports.getMethod = async reqInfo => {
     }
 }
 
-exports.getCollationMethod = async reqInfo => {
+exports.getCollationMethod = async (reqInfo) => {
     const hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
