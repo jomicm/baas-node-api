@@ -121,7 +121,7 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
 });
 
 // GET - Collation
-router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async (req, res) =>{
+router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
         dbName: req.params.dbname,
         colName: req.params.collection,
@@ -131,7 +131,6 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
         skip: req.query.skip || 0,
         limit: req.query.limit || 0
     };
-
     const response = await mongoMgt.getCollationMethod(reqInfo);
 
     res.status(response.request.code).send(response);
