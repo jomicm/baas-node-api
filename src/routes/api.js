@@ -43,6 +43,7 @@ router.get(`/api/${apilvl}/toolkit/:dbname/`, logStart, checkAuth, async (req, r
 router.get(`/api/${apilvl}/toolkit/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     const reqInfo = { dbName : req.params.dbname, colName : req.params.collection }
     const response = await mongoMgt.toolkitIsCollection(reqInfo);
+
     res.send({ response });
 });
 
