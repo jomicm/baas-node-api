@@ -120,7 +120,7 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
     res.status(r.request.code).send(r);
 });
 
-// GET - Collation
+// GET - AGGREGATION
 router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
         colName: req.params.collection,
@@ -136,7 +136,7 @@ router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, 
     res.status(response.request.code).send(response);
 });
 
-// GET - Collation
+// GET - COLLATION
 router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
         colName: req.params.collection,
@@ -165,6 +165,23 @@ router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, re
     }
     let r = await mongoMgt.getMethod(reqInfo);
     res.status(r.request.code).send(r);
+});
+
+//GET - REPEATED
+router.get(`/api/${apilvl}/repeatedValues/:dbname/:collection/:attribute`, logStart, checkAuth, async(req, res) =>{
+    const reqInfo = {
+        attribute: req.params.attribute,
+        colName: req.params.collection,
+        dbName: req.params.dbname,
+        fields: req.query.fields || {},
+        limit: req.query.limit || 0,
+        query: req.query.query || {},
+        skip: req.query.skip || 0,
+        sort: req.query.sort || 'asc',
+    };
+    const response = await mongoMgt.getRepeatedMethod(reqInfo);
+
+    res.status(response.request.code).send(response);
 });
 
 // GET_SINGLE

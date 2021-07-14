@@ -102,10 +102,10 @@ exports.getAggregateMethod = async(reqInfo) => {
         const response = await client.db(reqInfo.dbName)
           .collection(reqInfo.colName)
           .aggregate(reqInfo.query)
-          .skip(reqInfo.skip)
+          /*.skip(reqInfo.skip)
           .limit(reqInfo.limit)
           .sort(reqInfo.sort)
-          .project(reqInfo.fields)
+          .project(reqInfo.fields)*/
           .toArray();
         const hrend = process.hrtime(hrstart);
 
@@ -151,6 +151,29 @@ exports.getCountMethod = async reqInfo => {
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
     }
+}
+
+
+exports.getRepeatedMethod = async(reqInfo) =>{
+    const hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        const filter = await getFilter(reqInfo).then(function(searchValues) {
+          return searchValues;
+        })
+
+        const response = await getValues(reqInfo, filter[0].duplicateValues).then(function(value) {
+          return value;
+        })
+        
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    } 
 }
 
 exports.getSingleMethod = async reqInfo => {
@@ -260,4 +283,38 @@ isJSON = testString => {
     catch (e) {
         return false;
     }
+}
+
+async function getFilter(reqInfo) {
+  const query = sanitizeObject(
+    `[
+      {"$group":{"_id":"$${reqInfo.attribute}","${reqInfo.attribute}":{"$first":"$${reqInfo.attribute}"},"count":{"$sum":1}}},
+      {"$match":{"count":{"$gt":1}}},
+      {"$project":{"${reqInfo.attribute}":1,"_id":0}},
+      {"$group":{"_id":null,"duplicateValues":{"$push":"$${reqInfo.attribute}"}}},
+      {"$project":{"_id":0,"duplicateValues":1}}
+    ]`
+  )
+
+  const value = await client.db(reqInfo.dbName)
+  .collection(reqInfo.colName)
+  .aggregate(query)
+  .toArray();
+
+  return value;
+}
+
+async function getValues(reqInfo, data){
+  const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
+
+  const value = await await client.db(reqInfo.dbName)
+  .collection(reqInfo.colName)
+  .find(query)
+  .skip(reqInfo.skip)
+  .limit(reqInfo.limit)
+  .sort(reqInfo.sort)
+  .project(reqInfo.fields)
+  .toArray();
+
+  return value;
 }
