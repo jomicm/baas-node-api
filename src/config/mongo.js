@@ -95,6 +95,28 @@ exports.getMethod = async reqInfo => {
     }
 }
 
+exports.getAggregateMethod = async(reqInfo) => {
+    const hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        const response = await client.db(reqInfo.dbName)
+          .collection(reqInfo.colName)
+          .aggregate(reqInfo.query)
+          .skip(reqInfo.skip)
+          .limit(reqInfo.limit)
+          .sort(reqInfo.sort)
+          .project(reqInfo.fields)
+          .toArray();
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    }
+}
+
 exports.getCollationMethod = async(reqInfo) => {
     const hrstart = process.hrtime();
     try {
