@@ -26,11 +26,12 @@ let upload = multer({
     fileFilter
 });
 
-const mongoMgt = require('../config/mongo');
-const messages = require('../helpers/messages');
-const checkAuth = require('../helpers/check-auth');
-const logStart = require('../helpers/logStart');
 const apilvl = 'v1';
+const checkAuth = require('../helpers/check-auth');
+const logBook = require('../helpers/logBook');
+const logStart = require('../helpers/logStart');
+const messages = require('../helpers/messages');
+const mongoMgt = require('../config/mongo');
 
 // TOOLKIT
 router.get(`/api/${apilvl}/toolkit/:dbname/`, logStart, checkAuth, async (req, res) => {
@@ -106,7 +107,7 @@ router.get(`/api/${apilvl}/count/:dbname/:collection`, logStart, checkAuth, asyn
 });
 
 // GET
-router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
+router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = {
         dbName: req.params.dbname,
         colName: req.params.collection,
