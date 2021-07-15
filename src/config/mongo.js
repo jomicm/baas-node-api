@@ -155,12 +155,21 @@ exports.getRepeatedMethod = async(reqInfo) =>{
     try {
         reqInfo = clearParams(reqInfo);
         const filter = await getFilter(reqInfo).then(function(searchValues) {
+          if (searchValues.length == 0){
+            return null;
+          }
           return searchValues;
-        })
+        });
+        
+        if (!filter){
+          const hrend = process.hrtime(hrstart);
+          return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, 'No repeated values found', [], reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+        };
+        
 
         const response = await getValues(reqInfo, filter[0].duplicateValues).then(function(value) {
           return value;
-        })
+        });
         
         const hrend = process.hrtime(hrstart);
 
@@ -281,7 +290,7 @@ isJSON = testString => {
     }
 }
 
-async function getFilter(reqInfo) {
+const getFilter = async(reqInfo) => {
   const query = sanitizeObject(
     `[
       {"$group":{"_id":"$${reqInfo.attribute}","${reqInfo.attribute}":{"$first":"$${reqInfo.attribute}"},"count":{"$sum":1}}},
@@ -290,22 +299,24 @@ async function getFilter(reqInfo) {
       {"$group":{"_id":null,"duplicateValues":{"$push":"$${reqInfo.attribute}"}}},
       {"$project":{"_id":0,"duplicateValues":1}}
     ]`
-  )
+  );
 
   const value = await client.db(reqInfo.dbName)
   .collection(reqInfo.colName)
   .aggregate(query)
+  .collation({ locale:"en", strength:1 })
   .toArray();
 
   return value;
-}
+};
 
-async function getValues(reqInfo, data){
+const getValues = async(reqInfo, data) => {
   const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
 
   const value = await client.db(reqInfo.dbName)
   .collection(reqInfo.colName)
   .find(query)
+  .collation({ locale:"en", strength:2 })
   .skip(reqInfo.skip)
   .limit(reqInfo.limit)
   .sort(reqInfo.sort)
@@ -313,4 +324,4 @@ async function getValues(reqInfo, data){
   .toArray();
 
   return value;
-}
+};

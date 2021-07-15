@@ -168,7 +168,7 @@ router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, re
 });
 
 //GET - REPEATED
-router.get(`/api/${apilvl}/repeatedValues/:dbname/:collection/:attribute`, logStart, checkAuth, async(req, res) =>{
+router.get(`/api/${apilvl}/repeatedValues/:dbname/:collection/:attribute`, logStart, checkAuth, async(req, res) => {
     const reqInfo = {
         attribute: req.params.attribute,
         colName: req.params.collection,
