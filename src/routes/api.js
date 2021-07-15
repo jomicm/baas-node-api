@@ -135,7 +135,7 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
     const response = await mongoMgt.getCollationMethod(reqInfo);
 
     res.status(response.request.code).send(response);
-})
+});
 
 // GET - PUBLIC COLLECTIONS
 router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, logBook, async (req, res) => {

@@ -4,13 +4,13 @@ const { nonRecordableCollections } = require('./constants');
 module.exports = (req, res, next) => {
   try {
     const colName = 'logBook';
-    const {dbname, collection} = req.params;
+    const { dbname: dbName, collection } = req.params;
 
-    if(nonRecordableCollections.includes(collection)){
-      return next()
+    if (nonRecordableCollections.includes(collection)) {
+      return next();
     }
     
-    const object = {
+    const obj = {
       collection: collection,
       method: req.method,
       payload: req.body,
@@ -18,15 +18,10 @@ module.exports = (req, res, next) => {
       userEmail: req.userData.email,
       userId: req.userData.id,
       userLastName: req.userData.lastName,
-      userName: req.userData.name,
-    }
-
-    const reqInfo = {
-      dbName: dbname,
-      colName: colName,
-      obj: object,
+      userName: req.userData.name
     };
 
+    const reqInfo = { dbName, colName, obj };
     const response = postData(reqInfo);
 
     return next();
@@ -35,10 +30,4 @@ module.exports = (req, res, next) => {
   }
 }
 
-const postData = async(data) => {
-  const value = await  mongoMgt.postMethod(data);
-
-  return value;
-};
-
-
+const postData = async(data) => await mongoMgt.postMethod(data);
