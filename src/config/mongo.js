@@ -102,10 +102,6 @@ exports.getAggregateMethod = async(reqInfo) => {
         const response = await client.db(reqInfo.dbName)
           .collection(reqInfo.colName)
           .aggregate(reqInfo.query)
-          /*.skip(reqInfo.skip)
-          .limit(reqInfo.limit)
-          .sort(reqInfo.sort)
-          .project(reqInfo.fields)*/
           .toArray();
         const hrend = process.hrtime(hrstart);
 
@@ -307,7 +303,7 @@ async function getFilter(reqInfo) {
 async function getValues(reqInfo, data){
   const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
 
-  const value = await await client.db(reqInfo.dbName)
+  const value = await client.db(reqInfo.dbName)
   .collection(reqInfo.colName)
   .find(query)
   .skip(reqInfo.skip)
