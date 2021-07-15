@@ -75,28 +75,28 @@ router.post(`/api/${apilvl}/upload/:foldername`, logStart, checkAuth, upload.sin
 });
 
 // POST
-router.post(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
+router.post(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, obj:req.body};
     let r = await mongoMgt.postMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // POST WITH ENCRYPTION FOR PASSWORD FIELD
-router.post(`/api/${apilvl}/:dbname/:collection/encrypt`, logStart, checkAuth, async (req, res) => {
+router.post(`/api/${apilvl}/:dbname/:collection/encrypt`, logStart, checkAuth, logBook, async (req, res) => {
     const { dbname: dbName, collection: colName } = req.params;
     const r = await mongoMgt.postMethod({ dbName, colName, obj: req.body, isEncryption: true });
     res.status(r.request.code).send(r);
 });
 
 // POST TO GET VALIDATION OF USER
-router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, async (req, res) => {
+router.post(`/api/${apilvl}/:dbname/:collection/validuser`, logStart, logBook, async (req, res) => {
     const { dbname: dbName, collection: colName } = req.params;
     const r = await mongoMgt.postGetUserValidated({ dbName, colName, obj: req.body, res });
     res.status(r.request.code).send(r);
 });
 
 // GET COUNT
-router.get(`/api/${apilvl}/count/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
+router.get(`/api/${apilvl}/count/:dbname/:collection`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = {
         dbName: req.params.dbname,
         colName: req.params.collection,
@@ -122,7 +122,7 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, logBook, a
 });
 
 // GET - Collation
-router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
+router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, logBook, async(req, res) =>{
     const reqInfo = {
         colName: req.params.collection,
         dbName: req.params.dbname,
@@ -138,7 +138,7 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
 })
 
 // GET - PUBLIC COLLECTIONS
-router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, res) => {
+router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, logBook, async (req, res) => {
     const reqInfo = {
         dbName: req.params.dbname,
         colName: req.params.collection,
@@ -153,21 +153,21 @@ router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, re
 });
 
 // GET_SINGLE
-router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
+router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = { dbName: req.params.dbname, colName: req.params.collection, id: req.params.id }
     let r = await mongoMgt.getSingleMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // DELETE
-router.delete(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
+router.delete(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, id:req.params.id};
     let r = await mongoMgt.deleteMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
 
 // PUT
-router.put(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
+router.put(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, logBook, async (req, res) => {
     const reqInfo = {dbName:req.params.dbname, colName:req.params.collection, obj:req.body, id:req.params.id};
     let r = await mongoMgt.updateMethod(reqInfo);
     res.status(r.request.code).send(r);

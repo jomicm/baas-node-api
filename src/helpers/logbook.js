@@ -4,23 +4,25 @@ const { nonRecordableCollections } = require('./constants');
 module.exports = (req, res, next) => {
   try {
     const colName = 'logBook';
-    const date = new Date();
     const {dbname, collection} = req.params;
 
     if(nonRecordableCollections.includes(collection)){
       return next()
     }
-
+    
     const object = {
-      who: req.tokenUser,
-      when: date,
-      method: req.method,
       collection: collection,
-      payload: req.body
+      method: req.method,
+      payload: req.body,
+      timestamp: new Date().toISOString(),
+      userEmail: req.userData.email,
+      userId: req.userData.id,
+      userLastName: req.userData.lastName,
+      userName: req.userData.name,
     }
 
     const reqInfo = {
-      dbName:dbname,
+      dbName: dbname,
       colName: colName,
       obj: object,
     };
