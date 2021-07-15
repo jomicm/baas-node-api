@@ -1,14 +1,16 @@
-const router = require('express').Router();
-const messages = require('./messages');
 const mongoMgt = require('../config/mongo');
-
-const apilvl = 'v1';
+const { nonRecordableCollections } = require('./constants');
 
 module.exports = (req, res, next) => {
   try {
     const colName = 'logBook';
     const date = new Date();
     const {dbname, collection} = req.params;
+
+    if(nonRecordableCollections.includes(collection)){
+      return next()
+    }
+
     const object = {
       who: req.tokenUser,
       when: date,
@@ -23,21 +25,18 @@ module.exports = (req, res, next) => {
       obj: object,
     };
 
-
     const response = postData(reqInfo);
-    console.log(response);
 
-    next();
-
+    return next();
   } catch (error) {
       return res.status(500).send({ errorMessage: error.message});
   }
 }
 
-async function postData(data){
+const postData = async(data) => {
   const value = await  mongoMgt.postMethod(data);
 
   return value;
-} 
+};
 
 
