@@ -140,7 +140,7 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
 router.get(`/api/${apilvl}/generateReport/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     
     const reqInfo = {
-        body: req.body,
+        condition: req.body,
         collation: req.query.collation || { locale:'en' },
         dbName: req.params.dbname,
         colName: req.params.collection,
@@ -150,6 +150,7 @@ router.get(`/api/${apilvl}/generateReport/:dbname/:collection`, logStart, checkA
         skip: req.query.skip || 0,
         limit: req.query.limit || 0
     };
+
     let response = await mongoMgt.getReportMethod(reqInfo);
     res.status(response.request.code).send(response);
 });

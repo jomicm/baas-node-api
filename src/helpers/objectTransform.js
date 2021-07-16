@@ -1,3 +1,8 @@
+const { Parser } = require('json2csv');
+const fs = require('fs');
+const fastcsv = require('fast-csv');
+
+
 const { isEmpty, difference } = require('lodash');
 const _types = {
   simpleType: ['singleLine', 'multiLine', 'date', 'dateTime', 'currency', 'percentage', 'email', 'decimal', 'url', 'formula', 'richText'],
@@ -99,6 +104,22 @@ const _generalFields = {
   return { header, tableRows, headerObject, rows }
 };
 
+const JSONtoCSV = (data) => {
+  const parser = new Parser({ delimiter: '|' }, data.header);
+  const csv = parser.parse(data.rows);
+
+  return csv;
+};
+
+const downloadCSV = (data, path) => {
+  const file = fs.createWriteStream(path);
+  const write = fastcsv.write(data.rows, {delimiter: '|', headers:true}).pipe(file);
+};
+
+
+
 module.exports = {
-  formatData
+  formatData,
+  JSONtoCSV,
+  downloadCSV
 }
