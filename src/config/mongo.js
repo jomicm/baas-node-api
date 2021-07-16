@@ -4,6 +4,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
 const jwt = require('jsonwebtoken');
+const { isEmpty } = require('lodash');
 
 const { encryptPassword, matchPassword } = require('../helpers/encryption');
 const connString = 'mongodb://localhost';
@@ -155,18 +156,14 @@ exports.getRepeatedMethod = async(reqInfo) =>{
     const hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
-        const filter = await getFilter(reqInfo).then((searchValues) =>
-          searchValues.length && searchValues
-        );
+        const filter = await getFilter(reqInfo)
         
-        if (!filter){
+        if (isEmpty(filter)) {
           const hrend = process.hrtime(hrstart);
           return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, 'No repeated values found', [], reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
         };
         
-
-        const response = await getValues(reqInfo, filter[0].duplicateValues).then((value) => value);
-        
+        const response = await getValues(reqInfo, filter[0].duplicateValues);
         const hrend = process.hrtime(hrstart);
 
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
@@ -237,14 +234,7 @@ clearParams = reqInfo => {
     reqInfo.limit = Number.isInteger(parseInt(reqInfo.limit)) != NaN ? parseInt(reqInfo.limit) : 0;
     reqInfo.skip = Number.isInteger(parseInt(reqInfo.skip)) != NaN ? parseInt(reqInfo.skip) : 0;
     reqInfo.sort = isJSON(reqInfo.sort) ? JSON.parse(reqInfo.sort) : {};
-    // reqInfo.fields = isJSON(reqInfo.fields) ? JSON.parse(reqInfo.fields) : {};
-    // reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
     console.log('reqInfo.query:11111\n', reqInfo.query)
-    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
-    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
-    // console.log('reqInfo.query:33333\n', a)
-    // const b = JSON.parse(a);
-    // console.log('reqInfo.query:4444\n', typeof b)
     reqInfo.collation = sanitizeObject(reqInfo.collation);
     reqInfo.query = sanitizeObject(reqInfo.query);
     reqInfo.fields = sanitizeObject(reqInfo.fields);
@@ -294,28 +284,23 @@ const getFilter = async(reqInfo) => {
       {"$project":{"_id":0,"duplicateValues":1}}
     ]`
   );
-
-  const value = await client.db(reqInfo.dbName)
+  return await client.db(reqInfo.dbName)
     .collection(reqInfo.colName)
     .aggregate(query)
-    .collation({ locale:"en", strength:1 })
+    .collation({ locale: "en", strength: 1 })
     .toArray();
-
-  return value;
 };
 
 const getValues = async(reqInfo, data) => {
   const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
 
-  const value = await client.db(reqInfo.dbName)
+  return await client.db(reqInfo.dbName)
     .collection(reqInfo.colName)
     .find(query)
-    .collation({ locale:"en", strength:2 })
+    .collation({ locale: "en", strength: 2 })
     .skip(reqInfo.skip)
     .limit(reqInfo.limit)
     .sort(reqInfo.sort)
     .project(reqInfo.fields)
     .toArray();
-
-  return value;
 };

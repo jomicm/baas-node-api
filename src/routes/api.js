@@ -130,7 +130,7 @@ router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, 
         limit: req.query.limit || 0,
         query: req.query.query || {},
         skip: req.query.skip || 0,
-        sort: req.query.sort || 'asc',
+        sort: req.query.sort || 'asc'
     };
     const response = await mongoMgt.getAggregateMethod(reqInfo);
 
@@ -147,7 +147,7 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
         limit: req.query.limit || 0,
         query: req.query.query || {},
         skip: req.query.skip || 0,
-        sort: req.query.sort || 'asc',
+        sort: req.query.sort || 'asc'
     };
     const response = await mongoMgt.getCollationMethod(reqInfo);
 
@@ -179,7 +179,7 @@ router.get(`/api/${apilvl}/repeatedValues/:dbname/:collection/:attribute`, logSt
         limit: req.query.limit || 0,
         query: req.query.query || {},
         skip: req.query.skip || 0,
-        sort: req.query.sort || 'asc',
+        sort: req.query.sort || 'asc'
     };
     const response = await mongoMgt.getRepeatedMethod(reqInfo);
 
