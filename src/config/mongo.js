@@ -284,6 +284,7 @@ const getFilter = async(reqInfo) => {
       {"$project":{"_id":0,"duplicateValues":1}}
     ]`
   );
+  
   return await client.db(reqInfo.dbName)
     .collection(reqInfo.colName)
     .aggregate(query)
