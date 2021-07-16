@@ -155,12 +155,9 @@ exports.getRepeatedMethod = async(reqInfo) =>{
     const hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
-        const filter = await getFilter(reqInfo).then(function(searchValues) {
-          if (searchValues.length == 0){
-            return null;
-          }
-          return searchValues;
-        });
+        const filter = await getFilter(reqInfo).then((searchValues) =>
+          searchValues.length && searchValues
+        );
         
         if (!filter){
           const hrend = process.hrtime(hrstart);
@@ -168,9 +165,7 @@ exports.getRepeatedMethod = async(reqInfo) =>{
         };
         
 
-        const response = await getValues(reqInfo, filter[0].duplicateValues).then(function(value) {
-          return value;
-        });
+        const response = await getValues(reqInfo, filter[0].duplicateValues).then((value) => value);
         
         const hrend = process.hrtime(hrstart);
 
@@ -250,9 +245,6 @@ clearParams = reqInfo => {
     // console.log('reqInfo.query:33333\n', a)
     // const b = JSON.parse(a);
     // console.log('reqInfo.query:4444\n', typeof b)
-    // console.log('reqInfo.query:><<<>\n', isJSON(reqInfo.query))
-    // console.log('reqInfo.query:><<<>Str\n', testJSON(reqInfo.query))
-    // reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
     reqInfo.collation = sanitizeObject(reqInfo.collation);
     reqInfo.query = sanitizeObject(reqInfo.query);
     reqInfo.fields = sanitizeObject(reqInfo.fields);
@@ -304,10 +296,10 @@ const getFilter = async(reqInfo) => {
   );
 
   const value = await client.db(reqInfo.dbName)
-  .collection(reqInfo.colName)
-  .aggregate(query)
-  .collation({ locale:"en", strength:1 })
-  .toArray();
+    .collection(reqInfo.colName)
+    .aggregate(query)
+    .collation({ locale:"en", strength:1 })
+    .toArray();
 
   return value;
 };
@@ -316,14 +308,14 @@ const getValues = async(reqInfo, data) => {
   const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
 
   const value = await client.db(reqInfo.dbName)
-  .collection(reqInfo.colName)
-  .find(query)
-  .collation({ locale:"en", strength:2 })
-  .skip(reqInfo.skip)
-  .limit(reqInfo.limit)
-  .sort(reqInfo.sort)
-  .project(reqInfo.fields)
-  .toArray();
+    .collection(reqInfo.colName)
+    .find(query)
+    .collation({ locale:"en", strength:2 })
+    .skip(reqInfo.skip)
+    .limit(reqInfo.limit)
+    .sort(reqInfo.sort)
+    .project(reqInfo.fields)
+    .toArray();
 
   return value;
 };
