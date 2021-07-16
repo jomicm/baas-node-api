@@ -136,6 +136,24 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
     res.status(response.request.code).send(response);
 })
 
+// TEMPORAL_GET
+router.get(`/api/${apilvl}/generateReport/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
+    
+    const reqInfo = {
+        body: req.body,
+        collation: req.query.collation || { locale:'en' },
+        dbName: req.params.dbname,
+        colName: req.params.collection,
+        query: req.query.query || {},
+        fields: req.query.fields || {},
+        sort: req.query.sort || 'asc',
+        skip: req.query.skip || 0,
+        limit: req.query.limit || 0
+    };
+    let response = await mongoMgt.getReportMethod(reqInfo);
+    res.status(response.request.code).send(response);
+});
+
 // GET - PUBLIC COLLECTIONS
 router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, res) => {
     const reqInfo = {
@@ -153,10 +171,12 @@ router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, async (req, re
 
 // GET_SINGLE
 router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {
+    console.log(req.params)
     const reqInfo = { dbName: req.params.dbname, colName: req.params.collection, id: req.params.id }
     let r = await mongoMgt.getSingleMethod(reqInfo);
     res.status(r.request.code).send(r);
 });
+
 
 // DELETE
 router.delete(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {

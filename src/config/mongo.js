@@ -4,6 +4,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
 const jwt = require('jsonwebtoken');
+const { formatData } = require('../helpers/objectTransform');
 
 const { encryptPassword, matchPassword } = require('../helpers/encryption');
 const connString = 'mongodb://localhost';
@@ -108,6 +109,51 @@ exports.getCollationMethod = async(reqInfo) => {
           .sort(reqInfo.sort)
           .project(reqInfo.fields)
           .toArray();
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    }
+}
+
+exports.getReportMethod = async(reqInfo) => {
+    const hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        condition = [{ 
+            "creationDate": { 
+                "$gte": "2021-06-03T00:00:00.000Z", 
+                "$lte": "2021-07-15T00:00:00.000Z"  
+            }  
+        },  
+        { 
+            "locationsTable.parent": { 
+                "$in": [ "60e5c833cfb36746f4541329", "60e5c833cfb36746f4541328", "60e5c833cfb36746f454132a" ] 
+            } 
+        }];
+
+        const text = condition.map((e) => JSON.stringify(e)).join(',');
+        const query = JSON.stringify({
+            "$and":[text]
+        }).replace(/\\+/g, "").replace(/"{/g, "{").replace(/}"/g, "}");
+
+        const response = await client.db(reqInfo.dbName)
+          .collection(reqInfo.colName)
+          .find(JSON.parse(query))
+          .collation(reqInfo.collation)
+          .skip(reqInfo.skip)
+          .limit(reqInfo.limit)
+          .sort(reqInfo.sort)
+          .project(reqInfo.fields)
+          .toArray();
+
+        const data = response.map((e) => ({ ...e, _id:e._id.toString() }));
+        //console.log(data[0]);
+        const value = formatData(reqInfo.colName, data);
+        console.log(value);
         const hrend = process.hrtime(hrstart);
 
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
