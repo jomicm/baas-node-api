@@ -102,6 +102,7 @@ exports.getAggregateMethod = async(reqInfo) => {
         const response = await client.db(reqInfo.dbName)
           .collection(reqInfo.colName)
           .aggregate(reqInfo.query)
+          .collation(reqInfo.collation)
           .toArray();
         const hrend = process.hrtime(hrstart);
 
@@ -120,7 +121,7 @@ exports.getCollationMethod = async(reqInfo) => {
         const response = await client.db(reqInfo.dbName)
           .collection(reqInfo.colName)
           .find(reqInfo.query)
-          .collation({ locale:'en' })
+          .collation(reqInfo.collation)
           .skip(reqInfo.skip)
           .limit(reqInfo.limit)
           .sort(reqInfo.sort)
@@ -252,6 +253,7 @@ clearParams = reqInfo => {
     // console.log('reqInfo.query:><<<>\n', isJSON(reqInfo.query))
     // console.log('reqInfo.query:><<<>Str\n', testJSON(reqInfo.query))
     // reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
+    reqInfo.collation = sanitizeObject(reqInfo.collation);
     reqInfo.query = sanitizeObject(reqInfo.query);
     reqInfo.fields = sanitizeObject(reqInfo.fields);
     return reqInfo;

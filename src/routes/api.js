@@ -123,6 +123,7 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, async (req
 // GET - AGGREGATION
 router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
+        collation: req.query.collation || { locale: 'en' },
         colName: req.params.collection,
         dbName: req.params.dbname,
         fields: req.query.fields || {},
@@ -139,6 +140,7 @@ router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, 
 // GET - COLLATION
 router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, async(req, res) =>{
     const reqInfo = {
+        collation: req.query.collation || { locale: 'en' },
         colName: req.params.collection,
         dbName: req.params.dbname,
         fields: req.query.fields || {},
