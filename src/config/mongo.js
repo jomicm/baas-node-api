@@ -4,6 +4,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
 const jwt = require('jsonwebtoken');
+const { isEmpty } = require('lodash');
 
 const { encryptPassword, matchPassword } = require('../helpers/encryption');
 const connString = 'mongodb://localhost';
@@ -95,6 +96,25 @@ exports.getMethod = async reqInfo => {
     }
 }
 
+exports.getAggregateMethod = async(reqInfo) => {
+    const hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        const response = await client.db(reqInfo.dbName)
+          .collection(reqInfo.colName)
+          .aggregate(reqInfo.query)
+          .collation(reqInfo.collation)
+          .toArray();
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    }
+}
+
 exports.getCollationMethod = async(reqInfo) => {
     const hrstart = process.hrtime();
     try {
@@ -102,7 +122,7 @@ exports.getCollationMethod = async(reqInfo) => {
         const response = await client.db(reqInfo.dbName)
           .collection(reqInfo.colName)
           .find(reqInfo.query)
-          .collation({ locale:'en' })
+          .collation(reqInfo.collation)
           .skip(reqInfo.skip)
           .limit(reqInfo.limit)
           .sort(reqInfo.sort)
@@ -129,6 +149,29 @@ exports.getCountMethod = async reqInfo => {
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
     }
+}
+
+
+exports.getRepeatedMethod = async(reqInfo) =>{
+    const hrstart = process.hrtime();
+    try {
+        reqInfo = clearParams(reqInfo);
+        const filter = await getFilter(reqInfo)
+        
+        if (isEmpty(filter)) {
+          const hrend = process.hrtime(hrstart);
+          return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, 'No repeated values found', [], reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+        };
+        
+        const response = await getValues(reqInfo, filter[0].duplicateValues);
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
+    } catch (error) {
+        const hrend = process.hrtime(hrstart);
+
+        return messages.generateReply('error', 400, 'GET', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    } 
 }
 
 exports.getSingleMethod = async reqInfo => {
@@ -191,17 +234,8 @@ clearParams = reqInfo => {
     reqInfo.limit = Number.isInteger(parseInt(reqInfo.limit)) != NaN ? parseInt(reqInfo.limit) : 0;
     reqInfo.skip = Number.isInteger(parseInt(reqInfo.skip)) != NaN ? parseInt(reqInfo.skip) : 0;
     reqInfo.sort = isJSON(reqInfo.sort) ? JSON.parse(reqInfo.sort) : {};
-    // reqInfo.fields = isJSON(reqInfo.fields) ? JSON.parse(reqInfo.fields) : {};
-    // reqInfo.query = isJSON(reqInfo.query) ? JSON.parse(reqInfo.query) : {};
     console.log('reqInfo.query:11111\n', reqInfo.query)
-    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
-    // const a = (JSON.stringify(reqInfo.query)).replace(/(?:\\[rn])+/g, '').replace(/\'/g, '"');
-    // console.log('reqInfo.query:33333\n', a)
-    // const b = JSON.parse(a);
-    // console.log('reqInfo.query:4444\n', typeof b)
-    // console.log('reqInfo.query:><<<>\n', isJSON(reqInfo.query))
-    // console.log('reqInfo.query:><<<>Str\n', testJSON(reqInfo.query))
-    // reqInfo.query = isJSON(reqInfo.query) ? reqInfo.query : testJSON(reqInfo.query);
+    reqInfo.collation = sanitizeObject(reqInfo.collation);
     reqInfo.query = sanitizeObject(reqInfo.query);
     reqInfo.fields = sanitizeObject(reqInfo.fields);
     return reqInfo;
@@ -239,3 +273,35 @@ isJSON = testString => {
         return false;
     }
 }
+
+const getFilter = async(reqInfo) => {
+  const query = sanitizeObject(
+    `[
+      {"$group":{"_id":"$${reqInfo.attribute}","${reqInfo.attribute}":{"$first":"$${reqInfo.attribute}"},"count":{"$sum":1}}},
+      {"$match":{"count":{"$gt":1}}},
+      {"$project":{"${reqInfo.attribute}":1,"_id":0}},
+      {"$group":{"_id":null,"duplicateValues":{"$push":"$${reqInfo.attribute}"}}},
+      {"$project":{"_id":0,"duplicateValues":1}}
+    ]`
+  );
+  
+  return await client.db(reqInfo.dbName)
+    .collection(reqInfo.colName)
+    .aggregate(query)
+    .collation({ locale: "en", strength: 1 })
+    .toArray();
+};
+
+const getValues = async(reqInfo, data) => {
+  const query = sanitizeObject(`{ "${reqInfo.attribute}": { "$in": ${JSON.stringify(data)} } }`);
+
+  return await client.db(reqInfo.dbName)
+    .collection(reqInfo.colName)
+    .find(query)
+    .collation({ locale: "en", strength: 2 })
+    .skip(reqInfo.skip)
+    .limit(reqInfo.limit)
+    .sort(reqInfo.sort)
+    .project(reqInfo.fields)
+    .toArray();
+};

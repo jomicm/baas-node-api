@@ -121,16 +121,34 @@ router.get(`/api/${apilvl}/:dbname/:collection`, logStart, checkAuth, logBook, a
     res.status(r.request.code).send(r);
 });
 
-// GET - Collation
-router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, logBook, async(req, res) =>{
+// GET - AGGREGATION
+router.get(`/api/${apilvl}/aggregate/:dbname/:collection`, logStart, checkAuth, logBook, async(req, res) =>{
     const reqInfo = {
+        collation: req.query.collation || { locale: 'en' },
         colName: req.params.collection,
         dbName: req.params.dbname,
         fields: req.query.fields || {},
         limit: req.query.limit || 0,
         query: req.query.query || {},
         skip: req.query.skip || 0,
-        sort: req.query.sort || 'asc',
+        sort: req.query.sort || 'asc'
+    };
+    const response = await mongoMgt.getAggregateMethod(reqInfo);
+
+    res.status(response.request.code).send(response);
+});
+
+// GET - COLLATION
+router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, logBook, async(req, res) =>{
+    const reqInfo = {
+        collation: req.query.collation || { locale: 'en' },
+        colName: req.params.collection,
+        dbName: req.params.dbname,
+        fields: req.query.fields || {},
+        limit: req.query.limit || 0,
+        query: req.query.query || {},
+        skip: req.query.skip || 0,
+        sort: req.query.sort || 'asc'
     };
     const response = await mongoMgt.getCollationMethod(reqInfo);
 
@@ -150,6 +168,23 @@ router.get(`/api/${apilvl}/public/:dbname/:collection`, logStart, logBook, async
     }
     let r = await mongoMgt.getMethod(reqInfo);
     res.status(r.request.code).send(r);
+});
+
+//GET - REPEATED
+router.get(`/api/${apilvl}/repeatedValues/:dbname/:collection/:attribute`, logStart, checkAuth, async(req, res) => {
+    const reqInfo = {
+        attribute: req.params.attribute,
+        colName: req.params.collection,
+        dbName: req.params.dbname,
+        fields: req.query.fields || {},
+        limit: req.query.limit || 0,
+        query: req.query.query || {},
+        skip: req.query.skip || 0,
+        sort: req.query.sort || 'asc'
+    };
+    const response = await mongoMgt.getRepeatedMethod(reqInfo);
+
+    res.status(response.request.code).send(response);
 });
 
 // GET_SINGLE
