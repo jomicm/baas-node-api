@@ -140,7 +140,7 @@ router.get(`/api/${apilvl}/collation/:dbname/:collection`, logStart, checkAuth, 
 router.get(`/api/${apilvl}/generateReport/:dbname/:collection`, logStart, checkAuth, async (req, res) => {
     
     const reqInfo = {
-        condition: req.body,
+        body: req.body,
         collation: req.query.collation || { locale:'en' },
         dbName: req.params.dbname,
         colName: req.params.collection,
@@ -178,6 +178,23 @@ router.get(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async 
     res.status(r.request.code).send(r);
 });
 
+// DELETE_csvFILES
+router.delete(`/api/${apilvl}/:dbname/deleteCSV/:name`, logStart, checkAuth, async (req, res) => {
+    const reqInfo  = {
+      dbName: req.params.dbname,
+      colName: 'reports',
+      name: req.params.name,
+      query: req.query.query || {},
+      fields: req.query.fields || {},
+      sort: req.query.sort || 'asc',
+      skip: req.query.skip || 0,
+      limit: req.query.limit || 0
+    };
+
+    const response = mongoMgt.deleteReportsMethod(reqInfo);
+
+    res.status(response.request.code).send(response);
+});
 
 // DELETE
 router.delete(`/api/${apilvl}/:dbname/:collection/:id`, logStart, checkAuth, async (req, res) => {

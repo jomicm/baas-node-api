@@ -4,7 +4,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const messages = require('../helpers/messages');
 const jwt = require('jsonwebtoken');
-const { formatData, JSONtoCSV, downloadCSV } = require('../helpers/objectTransform');
+const { formatData, downloadCSV, deleteCSV } = require('../helpers/objectTransform');
 
 const { encryptPassword, matchPassword } = require('../helpers/encryption');
 const connString = 'mongodb://localhost';
@@ -123,7 +123,7 @@ exports.getReportMethod = async(reqInfo) => {
     const hrstart = process.hrtime();
     try {
         reqInfo = clearParams(reqInfo);
-        const { condition } = reqInfo;
+        const { condition } = reqInfo.body;
         const text = condition.map((e) => JSON.stringify(e)).join(',');
         const query = JSON.stringify({
             "$and":[text]
@@ -143,11 +143,7 @@ exports.getReportMethod = async(reqInfo) => {
         const value = formatData(reqInfo.colName, data);
         const hrend = process.hrtime(hrstart);
         // Second part
-        const csv = JSONtoCSV(value);
-        
-        console.log(csv);
-
-        const createFile = downloadCSV(value, "../fileDownload/testFile.cvs");
+        const createFile = downloadCSV(value, `./reports/${reqInfo.colName}Report.csv`);
 
         return messages.generateReply('success', 200, 'GET', reqInfo.dbName, reqInfo.colName, response.length, hrend, '', response, reqInfo.query, reqInfo.fields, reqInfo.sort, reqInfo.skip, reqInfo.limit);
     } catch (error) {
@@ -180,6 +176,18 @@ exports.getSingleMethod = async reqInfo => {
     } catch (error) {
         let hrend = process.hrtime(hrstart);
         return messages.generateReply('error', 400, 'GET_SINGLE', reqInfo.dbName, reqInfo.colName, 0, hrend, error.message, null);
+    }
+}
+
+exports.deleteReportsMethod = (reqInfo) => {
+    const hrstart = process.hrtime(); 
+    try{
+      const response = deleteCSV(reqInfo.name);
+      const hrend = process.hrtime(hrstart);
+      return messages.generateReply('success', 200, 'DELETE', reqInfo.dbName, reqInfo.colName, 0, hrend, '', response);
+    }catch (error) {
+      let hrend = process.hrtime(hrstart);
+        return messages.generateReply('error', 400, 'DELETE', reqInfo.dbName, reqInfo.colName, 1, hrend, error.message, null);
     }
 }
 

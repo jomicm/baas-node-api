@@ -116,10 +116,18 @@ const downloadCSV = (data, path) => {
   const write = fastcsv.write(data.rows, {delimiter: '|', headers:true}).pipe(file);
 };
 
+const deleteCSV = (name) => {
+  fs.unlink(`./reports/${name}Report.csv`, (err) => {
+    if (err) {
+      return err;
+    }
+  });
+  return { message: `${name}Report.csv file has been deleted` }
+};
 
 
 module.exports = {
   formatData,
-  JSONtoCSV,
-  downloadCSV
+  downloadCSV,
+  deleteCSV
 }
