@@ -28,7 +28,7 @@ let upload = multer({
 
 const apilvl = 'v1';
 const checkAuth = require('../helpers/check-auth');
-const logBook = require('../helpers/logBook');
+const logBook = require('../helpers/logbook');
 const logStart = require('../helpers/logStart');
 const messages = require('../helpers/messages');
 const mongoMgt = require('../config/mongo');
